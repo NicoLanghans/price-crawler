@@ -1,29 +1,41 @@
-
 from bs4 import BeautifulSoup
 import webbrowser
 import urllib.request
 from csv import writer
-
+import time
 
 
 # Ziel Website
-url = "https://www.otto.de/p/nike-sportswear-air-force-1-le-gs-sneaker-1229702164/#variationId=1229702854"
+urls = ["https://www.otto.de/p/nike-sportswear-air-force-1-le-gs-sneaker-1229702164/#variationId=1229702854", "https://www.otto.de/p/nike-sportswear-court-vision-low-sneaker-860786554/#variationId=860787754", "https://www.otto.de/p/ashley-brooke-by-heine-hosenanzug-1324918231/#variationId=1324918243"]
 
+i = 0
+price_tags = []
 
 # Öffnen mit Webbrowser
-webbrowser.open(url,new = 2)
-response = urllib.request.urlopen(url)
-content = response.read()
+# Test mit einfacher Schleife
+# kann man vlt lieber mit einer for schleife bauen?
+while i < len(urls):
+    time.sleep(1)
+    url = urls[i]
+    webbrowser.open(url,new = 2)
+    response = urllib.request.urlopen(url)
+    content = response.read()
 
-#Preis extrahieren mit BeatifulSoup
-soup = BeautifulSoup(content,'lxml')
-price_tag = soup.find('div', class_ = "prd_price__main js_prd_price__main")
+    #Preis extrahieren mit BeatifulSoup
+    soup = BeautifulSoup(content,'lxml')
+    price_tag = soup.find('div', class_ = "prd_price__main js_prd_price__main")
+    price_tags.append(price_tag)
 
-#Preis in csv schreiben
+    i += 1
+
+    #Preis in csv schreiben
 with open('shoe_prices.csv','w',newline='') as f:
-    thewriter = writer(f)
-    header = ['Price']
-    thewriter.writerow(header)
-    price = price_tag.find('span', id = "normalPriceAmount").text
-    info = [price]
-    thewriter.writerow(info)
+        thewriter = writer(f)
+        header = ['Price']
+
+        for price_tag in price_tags:
+            thewriter.writerow(header)
+            price = price_tag.find('span', id = "normalPriceAmount").text
+            info = [price]
+            thewriter.writerow(info)
+

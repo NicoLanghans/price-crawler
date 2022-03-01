@@ -1,7 +1,7 @@
 #from selenium import webdriver
 #from selenium.webdriver.chrome.service import Service
-import re
-from bs4 import BeautifulSoup
+import re from bs4 \
+import BeautifulSoup
 import webbrowser
 import urllib.request
 
@@ -32,3 +32,5 @@ soup = BeautifulSoup(content,'lxml')
 price_tag = soup.find('div', class_ = "prd_price__main js_prd_price__main")
 price = price_tag.find('span', id = "normalPriceAmount").text
 print(price)
+
+#push test

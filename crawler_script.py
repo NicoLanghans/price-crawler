@@ -30,6 +30,7 @@ while i < len(urls):
 
     #title_tag = soup.find('div', class_ = "js_shortInfo__variationName prd_shortInfo__variationName").text
     #titles.append(title_tag)
+    #könnte man vlt ergänzen wenn es funktioniert
 
     i += 1
 

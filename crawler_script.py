@@ -34,7 +34,7 @@ while i < len(urls):
 
     i += 1
 
-    #Preis in csv schreiben
+#Preis in csv schreiben
 with open('shoe_prices.csv','w',newline='') as f:
         thewriter = writer(f)
         header = ['Price', 'Title']

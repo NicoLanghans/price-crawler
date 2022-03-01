@@ -1,7 +1,7 @@
 #from selenium import webdriver
 #from selenium.webdriver.chrome.service import Service
-import re from bs4 \
-import BeautifulSoup
+import re
+from bs4 import BeautifulSoup
 import webbrowser
 import urllib.request
 

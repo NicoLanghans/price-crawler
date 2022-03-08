@@ -9,7 +9,7 @@ import time
 #urls = ["https://www.otto.de/p/nike-sportswear-air-force-1-le-gs-sneaker-1229702164/#variationId=1229702854", "https://www.otto.de/p/nike-sportswear-court-vision-low-sneaker-860786554/#variationId=860787754", "https://www.otto.de/p/ashley-brooke-by-heine-hosenanzug-1324918231/#variationId=1324918243"]
 
 #Listen und Laufvariable definieren
-i = 0
+
 prices = []
 titles = []
 
@@ -38,7 +38,7 @@ with open("import.csv") as file:
         title_tag = soup.find('div', class_ = "prd_module prd_module--noLine prd_shortInfo")
         titles.append(title_tag)
 
-        i += 1
+
 
 #csv öffnen
 #Preis in csv schreiben

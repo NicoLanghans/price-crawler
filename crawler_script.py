@@ -35,6 +35,7 @@ with open("import.csv") as file:
         title_tag = soup.find('div', class_ = "prd_module prd_module--noLine prd_shortInfo")
         titles.append(title_tag)
 
+#URLs erneut einlesen aus csv
 with open("import.csv") as file:
 
     for line in file:

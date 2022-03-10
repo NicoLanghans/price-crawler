@@ -1,3 +1,4 @@
+
 from bs4 import BeautifulSoup
 import webbrowser
 import urllib.request
@@ -72,9 +73,8 @@ with open('shoe_prices.csv','w',encoding= 'utf-8',newline='') as f:
             thewriter.writerow(info)
 
 
-
-
-
+# Ziel Website
+url = "https://www.otto.de/p/nike-sportswear-air-force-1-le-gs-sneaker-1229702164/#variationId=1229702854"
 
 
 

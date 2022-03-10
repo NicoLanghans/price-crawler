@@ -72,6 +72,3 @@ with open('shoe_prices.csv','w',encoding= 'utf-8',newline='') as f:
             info = [price, inco, title]
             thewriter.writerow(info)
 
-
-print("success")
-

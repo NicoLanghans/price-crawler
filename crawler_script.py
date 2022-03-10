@@ -50,7 +50,7 @@ with open("import.csv") as file:
         #Preis extrahieren mit BeatifulSoup
         soup = BeautifulSoup(content,'lxml')
 
-        #Preise in Lite speichern
+        #Preise in Liste speichern
         price_inco_tag = soup.find('div', class_ = "prd_price__main js_prd_price__main")
         prices_inco.append(price_inco_tag)
 
@@ -72,9 +72,6 @@ with open('shoe_prices.csv','w',encoding= 'utf-8',newline='') as f:
             info = [price, inco, title]
             thewriter.writerow(info)
 
-
-# Ziel Website
-url = "https://www.otto.de/p/nike-sportswear-air-force-1-le-gs-sneaker-1229702164/#variationId=1229702854"
 
 
 

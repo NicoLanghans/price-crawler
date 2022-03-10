@@ -28,7 +28,7 @@ with open("import.csv") as file:
         #Preis extrahieren mit BeatifulSoup
         soup = BeautifulSoup(content,'lxml')
 
-        #Preise in Lite speichern
+        #Preise in Liste speichern
         price_tag = soup.find('div', class_ = "prd_price__main js_prd_price__main")
         prices.append(price_tag)
 
@@ -73,5 +73,5 @@ with open('shoe_prices.csv','w',encoding= 'utf-8',newline='') as f:
             thewriter.writerow(info)
 
 
-
+print("success")
 

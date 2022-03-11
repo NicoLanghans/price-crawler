@@ -1,69 +1,73 @@
-
 from bs4 import BeautifulSoup
 import webbrowser
 import urllib.request
 from csv import writer
 import time
+from winreg import *
+import os
 
 prices = []
 titles = []
 prices_inco = []
 
-#URLs einlesen aus csv
+# Erkennen des Default Browsers
+def default_browser ():
+    with OpenKey(HKEY_CURRENT_USER, r"Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice") as key:
+        browser = QueryValueEx(key, 'Progid')[0]
+    if browser == "ChromeHTML":
+        return "chrome.exe"
+    if browser == "MSEdgeHTM":
+        return "msedge.exe"
+    if browser == "FirefoxURL-308046B0AF4A39CB":
+        return "firefox.exe"
+
+#URLs einlesen aus csv - Untersuchter Preis
 with open("import.csv") as file:
-
-    # Öffnen mit Webbrowser
-
+    
     for line in file:
         time.sleep(1)
         url = line
 
-        #path kann weggelassen werden (nur zur sicherheit)
+        #Öffnen mit Webbrowser
         path = 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe %s'
         webbrowser.get(path)
-        webbrowser.open(url,new = 2)
+        webbrowser.open(url,new = 1)
         response = urllib.request.urlopen(url)
         content = response.read()
-
         #Preis extrahieren mit BeatifulSoup
         soup = BeautifulSoup(content,'lxml')
-
-        #Preise in Liste speichern
+        #Preise/Titel in Liste speichern
         price_tag = soup.find('div', class_ = "prd_price__main js_prd_price__main")
         prices.append(price_tag)
-
-        #Titel in Liste speichern
         title_tag = soup.find('div', class_ = "prd_module prd_module--noLine prd_shortInfo")
         titles.append(title_tag)
+        #Browsertab schließen
+        time.sleep(1)
+        os.system("taskkill /f /im "+default_browser())
 
-#URLs erneut einlesen aus csv
+#URLs erneut einlesen aus csv - Vergleichspreis(Incognito)
 with open("import.csv") as file:
-
     for line in file:
         time.sleep(1)
         url = line
+
+        # Öffnen mit Webbrowser - Incognito
         path_inco = 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe %s --incognito'
         webbrowser.get(path_inco).open(url,new= 2)
         response = urllib.request.urlopen(url)
         content = response.read()
-
         #Preis extrahieren mit BeatifulSoup
         soup = BeautifulSoup(content,'lxml')
-
         #Preise in Liste speichern
         price_inco_tag = soup.find('div', class_ = "prd_price__main js_prd_price__main")
         prices_inco.append(price_inco_tag)
 
-
-
 #csv öffnen
 #Preis in csv schreiben
-
 with open('shoe_prices.csv','w',encoding= 'utf-8',newline='') as f:
         thewriter = writer(f)
         header = ['Price', 'Incognito Price', 'Title']
         thewriter.writerow(header)
-
         #kann man sicher schöner lösen
         for price_tag, title_tag, price_inco_tag in zip(prices, titles, prices_inco):
             price = price_tag.find('span', id = "normalPriceAmount").text

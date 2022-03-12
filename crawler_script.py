@@ -3,8 +3,8 @@ import webbrowser
 import urllib.request
 from csv import writer
 import time
+import keyboard
 from winreg import *
-import os
 
 prices = []
 titles = []
@@ -15,11 +15,17 @@ def default_browser ():
     with OpenKey(HKEY_CURRENT_USER, r"Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice") as key:
         browser = QueryValueEx(key, 'Progid')[0]
     if browser == "ChromeHTML":
-        return "chrome.exe"
+        return "chrome"
     if browser == "MSEdgeHTM":
-        return "msedge.exe"
+        return "egde"
     if browser == "FirefoxURL-308046B0AF4A39CB":
-        return "firefox.exe"
+        return "firefox"
+
+def close_tab ():
+    if default_browser() == "firefox":
+        keyboard.press_and_release('Alt+F4')
+    else:
+        keyboard.press_and_release('ctrl+w')
 
 #URLs einlesen aus csv - Untersuchter Preis
 with open("import.csv") as file:
@@ -43,7 +49,7 @@ with open("import.csv") as file:
         titles.append(title_tag)
         #Browsertab schließen
         time.sleep(1)
-        os.system("taskkill /f /im "+default_browser())
+        close_tab()
 
 #URLs erneut einlesen aus csv - Vergleichspreis(Incognito)
 with open("import.csv") as file:

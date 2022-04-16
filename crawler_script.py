@@ -6,8 +6,10 @@ import time
 from winreg import *
 import pandas as pd
 
-def default_browser ():
-    with OpenKey(HKEY_CURRENT_USER, r"Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice") as key:
+
+def default_browser():
+    with OpenKey(HKEY_CURRENT_USER,
+                 r"Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice") as key:
         browser = QueryValueEx(key, 'Progid')[0]
     if browser == "ChromeHTML":
         return "chrome.exe"
@@ -16,17 +18,22 @@ def default_browser ():
     if browser == "FirefoxURL-308046B0AF4A39CB":
         return "Firefox"
 
+
 def close_tab():
     if default_browser() == "Firefox":
         keyboard.press_and_release('Alt+F4')
     else:
         keyboard.press_and_release('ctrl+w')
 
-df = pd.DataFrame( columns = ["url", "price","inco_price", "name"]) #benoetigte dataframes initialisieren
-all_prices_df = pd.DataFrame( columns = ["url", "price","inco_price", "name"])
+user_agent = open('user_agent.txt','r').readline().strip() #user agent aus Textdatei auf Variable zuweisen
+headers = {'User-Agent': user_agent}
+
+df = pd.DataFrame(columns=["url", "price", "inco_price", "name"])  # benoetigte dataframes initialisieren
+all_prices_df = pd.DataFrame(columns=["url", "price", "inco_price", "name"])
 df_input = pd.read_csv('import_url.csv')
 i = 0
-for row in df_input.itertuples():               #csv Input den Variablen zuweisen
+
+for row in df_input.itertuples():  # csv Input den Variablen zuweisen
     url = row[1]
     pt_css_sel = row[2]
     pt_css_sel_attr = row[3]
@@ -40,38 +47,42 @@ for row in df_input.itertuples():               #csv Input den Variablen zuweise
     n_css_sel = row[11]
     n_css_sel_attr = row[12]
     n_css_sel_name = row[13]
-    shop = url[12:(url.find('/',10,))]
+    shop = url[12:(url.find('/', 10, ))]
 
     try:
-        webbrowser.open(url,new = 1)              #browsertab oeffnen und Informationen abfragen
-        response = urllib.request.urlopen(url)
+
+        webbrowser.open(url, new=1)  # browsertab oeffnen und Informationen abfragen
+        request = urllib.request.Request(url, None, headers)  # Anfrage mit header/ user agent
+        response = urllib.request.urlopen(request, timeout=5)   #timeout hinzugefügt
         content = response.read()
-        soup = BeautifulSoup(content,'lxml')
+
+        soup = BeautifulSoup(content, 'lxml')
+
         if pt_css_sel_attr == 'class':
-            price_tag = soup.find(pt_css_sel, class_ = pt_css_sel_name)
+            price_tag = soup.find(pt_css_sel, class_=pt_css_sel_name)
         elif pt_css_sel_attr == 'display':
-            price_tag = soup.find(pt_css_sel, display = pt_css_sel_name)
+            price_tag = soup.find(pt_css_sel, display=pt_css_sel_name)
         elif pt_css_sel_attr == 'id':
-            price_tag = soup.find(pt_css_sel, id = pt_css_sel_name)   
+            price_tag = soup.find(pt_css_sel, id=pt_css_sel_name)
 
         if p_css_sel_attr == 'class':
-            price = price_tag.find(p_css_sel, class_ = p_css_sel_name).text.strip()
+            price = price_tag.find(p_css_sel, class_=p_css_sel_name).text.strip()
         elif p_css_sel_attr == 'id':
-            price = price_tag.find(p_css_sel, id = p_css_sel_name).text.strip()
+            price = price_tag.find(p_css_sel, id=p_css_sel_name).text.strip()
         elif p_css_sel_attr == 'itemprop':
-            price = price_tag.find(p_css_sel, itemprop = p_css_sel_name).text.strip()
+            price = price_tag.find(p_css_sel, itemprop=p_css_sel_name).text.strip()
 
         if nt_css_sel_attr == 'class':
-            name_tag = soup.find(nt_css_sel, class_ = nt_css_sel_name)
+            name_tag = soup.find(nt_css_sel, class_=nt_css_sel_name)
         elif nt_css_sel_attr == 'id':
-            name_tag = soup.find(nt_css_sel, id = nt_css_sel_name)
+            name_tag = soup.find(nt_css_sel, id=nt_css_sel_name)
 
         if n_css_sel_attr == 'class':
-            name = name_tag.find(n_css_sel, class_ = n_css_sel_name).text.strip()
+            name = name_tag.find(n_css_sel, class_=n_css_sel_name).text.strip()
         elif n_css_sel_attr == 'id':
-            name = name_tag.find(n_css_sel, id = n_css_sel_name).text.strip()
+            name = name_tag.find(n_css_sel, id=n_css_sel_name).text.strip()
         elif n_css_sel_attr == 'itemprop':
-            name = name_tag.find(n_css_sel, itemprop = n_css_sel_name).text.strip()
+            name = name_tag.find(n_css_sel, itemprop=n_css_sel_name).text.strip()
         elif n_css_sel_attr == 'individual':
             name_tmp = str(name_tag.find_all('h1'))
             name = soup.h1.text.strip()
@@ -79,35 +90,40 @@ for row in df_input.itertuples():               #csv Input den Variablen zuweise
         close_tab()
         print(f"{shop} - successfully loaded")
 
-        path_inco = 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe %s --incognito'        #informationen incognito abfragen
-        webbrowser.get(path_inco).open(url,new= 2)
-        response = urllib.request.urlopen(url)
+        path_inco = 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe %s --incognito'  #informationen incognito abfragen
+        webbrowser.get(path_inco).open(url, new=2)
+        request = urllib.request.Request(url, None, headers)  # Anfrage mit header
+        response = urllib.request.urlopen(request, timeout=5)
         content = response.read()
-        soup = BeautifulSoup(content,'lxml')
+
+        soup = BeautifulSoup(content, 'lxml')
 
         if pt_css_sel_attr == 'class':
-            inco_price_tag = soup.find(pt_css_sel, class_ = pt_css_sel_name)
+            inco_price_tag = soup.find(pt_css_sel, class_=pt_css_sel_name)
         elif pt_css_sel_attr == 'id':
-            inco_price_tag = soup.find(pt_css_sel, id = pt_css_sel_name)
+            inco_price_tag = soup.find(pt_css_sel, id=pt_css_sel_name)
 
         if p_css_sel_attr == 'class':
-            inco_price = inco_price_tag.find(p_css_sel, class_ = p_css_sel_name).text.strip()
+            inco_price = inco_price_tag.find(p_css_sel, class_=p_css_sel_name).text.strip()
         elif p_css_sel_attr == 'id':
-            inco_price = inco_price_tag.find(p_css_sel, id = p_css_sel_name).text.strip()
+            inco_price = inco_price_tag.find(p_css_sel, id=p_css_sel_name).text.strip()
         elif p_css_sel_attr == 'itemprop':
-            inco_price = inco_price_tag.find(p_css_sel, itemprop = p_css_sel_name).text.strip()
-   
-        row = pd.DataFrame({'url': [url], 'price': [price], 'inco_price': [inco_price], 'name': [name]}) #variablen in dataframe hinzufuegen
-        df = pd.concat([df,row], ignore_index = True)
+            inco_price = inco_price_tag.find(p_css_sel, itemprop=p_css_sel_name).text.strip()
+
+        row = pd.DataFrame({'url': [url], 'price': [price], 'inco_price': [inco_price],
+                            'name': [name]})  # variablen in dataframe hinzufuegen
+        df = pd.concat([df, row], ignore_index=True)
         time.sleep(1)
 
-    except NameError:
+    except AttributeError:
+        close_tab()
         print(f"{shop} - variable missing")
-        close_tab()
     except:
-        print(f"{shop} - access denied")
         close_tab()
+        print(f"{shop} - access denied")
+
     time.sleep(1)
 
-all_prices_df = pd.concat([all_prices_df, df], ignore_index = True)
-all_prices_df.to_csv(r'C:\Users\nico-\Documents\Fh Wedel Master\Seminar Personalisierte Preise\prices_export.csv', index = False, header = True, encoding = 'UTF-8') #finalen dataframe in csv exportieren
+all_prices_df = pd.concat([all_prices_df, df], ignore_index=True)
+all_prices_df.to_csv(r'C:\Users\Marc\PycharmProjects\pythonProject\prices_export.csv',
+                     index=False, header=True, encoding='UTF-8')  # finalen dataframe in csv exportieren

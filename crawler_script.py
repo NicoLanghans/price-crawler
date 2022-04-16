@@ -5,11 +5,12 @@ import urllib.request
 import time
 from winreg import *
 import pandas as pd
+import os
+import pathlib
 
 
 def default_browser():
-    with OpenKey(HKEY_CURRENT_USER,
-                 r"Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice") as key:
+    with OpenKey(HKEY_CURRENT_USER, r"Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\http\\UserChoice") as key:
         browser = QueryValueEx(key, 'Progid')[0]
     if browser == "ChromeHTML":
         return "chrome.exe"
@@ -25,13 +26,30 @@ def close_tab():
     else:
         keyboard.press_and_release('ctrl+w')
 
+def path_def():
+    def find_path():
+        p= ''
+        for r,d,f in os.walk("C:\\"):
+            for files in f:
+                if files == "chrome.exe":
+                    p = os.path.join(r,files)
+            if p != '':
+                break
+        return p
+
+    p = find_path() + ' %s'
+    path_tmp = pathlib.PureWindowsPath(p)
+    path = path_tmp.as_posix() 
+    return path
+
+path = path_def()
+
 user_agent = open('user_agent.txt','r').readline().strip() #user agent aus Textdatei auf Variable zuweisen
 headers = {'User-Agent': user_agent}
 
 df = pd.DataFrame(columns=["url", "price", "inco_price", "name"])  # benoetigte dataframes initialisieren
 all_prices_df = pd.DataFrame(columns=["url", "price", "inco_price", "name"])
 df_input = pd.read_csv('import_url.csv')
-i = 0
 
 for row in df_input.itertuples():  # csv Input den Variablen zuweisen
     url = row[1]
@@ -51,7 +69,7 @@ for row in df_input.itertuples():  # csv Input den Variablen zuweisen
 
     try:
 
-        webbrowser.open(url, new=1)  # browsertab oeffnen und Informationen abfragen
+        webbrowser.get(path).open(url, new=1)  # browsertab oeffnen und Informationen abfragen
         request = urllib.request.Request(url, None, headers)  # Anfrage mit header/ user agent
         response = urllib.request.urlopen(request, timeout=5)   #timeout hinzugefügt
         content = response.read()
@@ -90,7 +108,7 @@ for row in df_input.itertuples():  # csv Input den Variablen zuweisen
         close_tab()
         print(f"{shop} - successfully loaded")
 
-        path_inco = 'C:\Program Files (x86)\Google\Chrome\Application\chrome.exe %s --incognito'  #informationen incognito abfragen
+        path_inco = path + ' --incognito'  #informationen incognito abfragen
         webbrowser.get(path_inco).open(url, new=2)
         request = urllib.request.Request(url, None, headers)  # Anfrage mit header
         response = urllib.request.urlopen(request, timeout=5)
@@ -110,11 +128,11 @@ for row in df_input.itertuples():  # csv Input den Variablen zuweisen
         elif p_css_sel_attr == 'itemprop':
             inco_price = inco_price_tag.find(p_css_sel, itemprop=p_css_sel_name).text.strip()
 
-        row = pd.DataFrame({'url': [url], 'price': [price], 'inco_price': [inco_price],
-                            'name': [name]})  # variablen in dataframe hinzufuegen
+        row = pd.DataFrame({'url': [url], 'price': [price], 'inco_price': [inco_price],'name': [name]})  # variablen in dataframe hinzufuegen
         df = pd.concat([df, row], ignore_index=True)
         time.sleep(1)
-
+        close_tab()
+        
     except AttributeError:
         close_tab()
         print(f"{shop} - variable missing")
@@ -125,5 +143,5 @@ for row in df_input.itertuples():  # csv Input den Variablen zuweisen
     time.sleep(1)
 
 all_prices_df = pd.concat([all_prices_df, df], ignore_index=True)
-all_prices_df.to_csv(r'C:\Users\Marc\PycharmProjects\pythonProject\prices_export.csv',
-                     index=False, header=True, encoding='UTF-8')  # finalen dataframe in csv exportieren
+user_profile = os.environ['USERPROFILE']
+all_prices_df.to_csv(user_profile + '\Desktop\prices_export.csv', index = False, header = True, encoding = 'UTF-8') #finalen dataframe in csv exportieren

@@ -14,17 +14,19 @@ def path_def():
             break
     return p
 
+exe_path = path_def() #Reihenfolge geändert
+user_profile = os.environ['USERPROFILE']
+data_dir= os.path.join(r'C:\Users', user_profile, r'AppData\Local\Google\Chrome\User Data')
+
 with sync_playwright() as s:
-  browser = s.chromium.launch(headless = False, slow_mo =200)
+  browser = s.chromium.launch(executable_path = exe_path,headless = False, slow_mo =200) #path hinzugefügt
   page = browser.new_page()
   page.goto('http://wieistmeinuseragent.de/')
   ua_content = page.content()
   soup = BeautifulSoup(ua_content, 'lxml')
   user_agent = soup.find('p', class_ = 'useragent').text.strip()
 
-exe_path = path_def()
-user_profile = os.environ['USERPROFILE']
-data_dir= os.path.join(r'C:\Users', user_profile, r'AppData\Local\Google\Chrome\User Data')
+
 
 df = pd.DataFrame(columns=["url", "price", "inco_price", "name"])  # benoetigte dataframes initialisieren
 all_prices_df = pd.DataFrame(columns=["url", "price", "inco_price", "name"])
@@ -98,7 +100,7 @@ for row in df_input.itertuples():  # csv Input den Variablen zuweisen
 
     try:
         with sync_playwright() as p:    #playwright hinzugefügt
-            browser = p.chromium.launch(headless=True, slow_mo=2500)
+            browser = p.chromium.launch(executable_path = exe_path,headless=True, slow_mo=2500)
             page = browser.new_page()
             page.goto(url)
             content_inco = page.content()

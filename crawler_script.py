@@ -25,11 +25,12 @@ with sync_playwright() as s:
   ua_content = page.content()
   soup = BeautifulSoup(ua_content, 'lxml')
   user_agent = soup.find('p', class_ = 'useragent').text.strip()
+  browser_version = soup.findAll('p')[1].get_text(strip =True).replace("\n", " ").replace("\t", " ")
 
 
 
-df = pd.DataFrame(columns=["url", "price", "inco_price", "name"])  # benoetigte dataframes initialisieren
-all_prices_df = pd.DataFrame(columns=["url", "price", "inco_price", "name"])
+df = pd.DataFrame(columns=["url", "price", "inco_price", "name","ua","browser"])  # benoetigte dataframes initialisieren
+all_prices_df = pd.DataFrame(columns=["url", "price", "inco_price", "name", "ua","browser"])
 df_input = pd.read_csv('import_url.csv')
 
 
@@ -59,7 +60,7 @@ for row in df_input.itertuples():  # csv Input den Variablen zuweisen
             page = browser.new_page()
             page.goto(url)
             content = page.content()
-            soup = BeautifulSoup(content, 'lxml')
+            soup = BeautifulSoup(content, 'lxml') 
             if pt_css_sel_attr == 'class':
                 price_tag = soup.find(pt_css_sel, class_=pt_css_sel_name)
             elif pt_css_sel_attr == 'display':
@@ -72,7 +73,7 @@ for row in df_input.itertuples():  # csv Input den Variablen zuweisen
             elif p_css_sel_attr == 'id':
                 price = price_tag.find(p_css_sel, id=p_css_sel_name).text.strip()
             elif p_css_sel_attr == 'itemprop':
-                price = price_tag.find(p_css_sel, itemprop=p_css_sel_name).text.strip()
+                price = price_tag.find(p_css_sel, itemprop=p_css_sel_name).text.strip()          
 
             soup = BeautifulSoup(content, 'lxml')
             if nt_css_sel_attr == 'class':
@@ -87,7 +88,6 @@ for row in df_input.itertuples():  # csv Input den Variablen zuweisen
             elif n_css_sel_attr == 'itemprop':
                 name = name_tag.find(n_css_sel, itemprop=n_css_sel_name).text.strip()
             elif n_css_sel_attr == 'individual':
-                name_tmp = str(name_tag.find_all('h1'))
                 name = soup.h1.text.strip()
         time.sleep(0.5)
 
@@ -115,7 +115,8 @@ for row in df_input.itertuples():  # csv Input den Variablen zuweisen
                 inco_price = inco_price_tag.find(p_css_sel, id=p_css_sel_name).text.strip()
             elif p_css_sel_attr == 'itemprop':
                 inco_price = inco_price_tag.find(p_css_sel, itemprop=p_css_sel_name).text.strip()
-            row = pd.DataFrame({'url': [url], 'price': [price], 'inco_price': [inco_price],'name': [name]})  # variablen in dataframe hinzufuegen
+            ua = user_agent.replace(';',',')
+            row = pd.DataFrame({'url': [url], 'price': [price], 'inco_price': [inco_price],'name': [name], 'ua':[ua], 'browser': [browser_version]})  # variablen in dataframe hinzufuegen
             df = pd.concat([df, row], ignore_index=True)
         time.sleep(0.5)
 
